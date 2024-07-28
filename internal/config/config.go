@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultAddr         = "localhost:8080"
-	defaultDBURI        = "postgres://fuks:pass@localhost:5432/gophermart"
+	defaultDBURI        = "postgres://fuks:pass@localhost:5432/accrual"
 	defaultAccrualAddr  = "http://localhost:8000"
 	defaultSignatureKey = "super_secret"
 	lenPassKey          = 32

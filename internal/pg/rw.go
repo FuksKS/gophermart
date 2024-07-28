@@ -35,16 +35,16 @@ func (r PgRepo) AddOrder(ctx context.Context, orderID string, userID int64) erro
 	}
 
 	if commandTag.RowsAffected() == 0 {
-		var userFromDb int64
-		err := r.DB.QueryRow(ctx2, selectOrdersUserQuery, orderID).Scan(&userFromDb)
+		var userFromDB int64
+		err := r.DB.QueryRow(ctx2, selectOrdersUserQuery, orderID).Scan(&userFromDB)
 		if err != nil {
 			return fmt.Errorf("AddOrder-selectOrdersUserQuery-err: %w", err)
 		}
 
-		if userFromDb == userID {
-			return model.AlreadyUploadedByThisUser
+		if userFromDB == userID {
+			return model.ErrAlreadyUploadedByThisUser
 		} else {
-			return model.AlreadyUploadedByAnotherUser
+			return model.ErrAlreadyUploadedByAnotherUser
 		}
 	}
 
@@ -66,13 +66,13 @@ func (r PgRepo) Withdraw(ctx context.Context, withdraw model.Withdraw) error {
 	err = tx.QueryRow(ctx2, decreaseBalanceQuery, withdraw.UserID, withdraw.Sum).Scan(&newBalance)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return model.NotEnoughMoneyError
+			return model.ErrNotEnoughMoney
 		}
 		return fmt.Errorf("Withdraw-decreaseBalanceQuery-err: %w", err)
 	}
 
 	if newBalance < 0 {
-		return model.NotEnoughMoneyError
+		return model.ErrNotEnoughMoney
 	}
 
 	commandTag, err := tx.Exec(ctx2, newWithdrawQuery, withdraw.UserID, withdraw.OrderID, withdraw.Sum)
@@ -81,7 +81,7 @@ func (r PgRepo) Withdraw(ctx context.Context, withdraw model.Withdraw) error {
 	}
 
 	if commandTag.RowsAffected() == 0 {
-		return model.OrderAlreadyUploaded
+		return model.ErrOrderAlreadyUploaded
 	}
 
 	err = tx.Commit(ctx2)

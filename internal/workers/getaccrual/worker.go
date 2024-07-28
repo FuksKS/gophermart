@@ -32,13 +32,13 @@ func (w *accrualWorker) Process(ctx context.Context) error {
 			time.Sleep(5 * time.Second)
 			return nil
 		}
-		logger.Log.Error(fmt.Sprintf("getAccrualWorker-storager-GetOrderForAccrual-err: %w", err))
+		logger.Log.Error("getAccrualWorker-storager-GetOrderForAccrual-err", zap.Error(err))
 		return err
 	}
 
 	code, accrual, err := w.accrualService.GetAccrual(orderID)
 	if err != nil {
-		logger.Log.Error(fmt.Sprintf("getAccrualWorker-accrualService-GetAccrual-err: %w", err), zap.String("order_id", orderID))
+		logger.Log.Error("getAccrualWorker-accrualService-GetAccrual-err", zap.Error(err), zap.String("order_id", orderID))
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (w *accrualWorker) Process(ctx context.Context) error {
 
 	err = w.storager.SetAccrual(ctx, accrual)
 	if err != nil {
-		logger.Log.Error(fmt.Sprintf("getAccrualWorker-storager-SetAccrual-err: %w", err))
+		logger.Log.Error("getAccrualWorker-storager-SetAccrual-err", zap.Error(err))
 		return err
 	}
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gophermart/internal/model"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -35,7 +35,7 @@ func (c *client) GetAccrual(orderID string) (int, model.Accrual, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, model.Accrual{}, fmt.Errorf("GetAccrual ReadBody-err: %w", err)
 	}

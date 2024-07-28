@@ -27,7 +27,7 @@ func (h *GmHandler) addOrder() http.HandlerFunc {
 		orderID := string(body)
 
 		isCorrect, err := luhnalgorithm.LuhnCheck(orderID)
-		if err != nil && errors.Is(err, model.NotANumberError) {
+		if err != nil && errors.Is(err, model.ErrNotANumber) {
 			logger.Log.Error("addOrder LuhnCheck error", zap.String("error", err.Error()))
 			fmt.Println("addOrder LuhnCheck error. order id is not a number")
 			http.Error(w, "order id is not a number", http.StatusUnprocessableEntity)
@@ -57,11 +57,11 @@ func (h *GmHandler) addOrder() http.HandlerFunc {
 
 		err = h.gmService.AddOrder(ctx, orderID, userInt64)
 		if err != nil {
-			if errors.Is(err, model.AlreadyUploadedByThisUser) {
+			if errors.Is(err, model.ErrAlreadyUploadedByThisUser) {
 				logger.Log.Warn("AddOrder error", zap.String("error", err.Error()))
 				w.WriteHeader(http.StatusOK)
 				return
-			} else if errors.Is(err, model.AlreadyUploadedByAnotherUser) {
+			} else if errors.Is(err, model.ErrAlreadyUploadedByAnotherUser) {
 				logger.Log.Error("AddOrder error", zap.String("error", err.Error()))
 				http.Error(w, "order id has already been uploaded by another user", http.StatusConflict)
 				return

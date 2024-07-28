@@ -15,7 +15,7 @@ func LuhnCheck(number string) (bool, error) {
 		// Преобразуем символ в число
 		n, err := strconv.Atoi(string(number[i]))
 		if err != nil {
-			return false, model.NotANumberError
+			return false, model.ErrNotANumber
 		}
 
 		if alternate {

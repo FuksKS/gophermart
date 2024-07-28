@@ -71,7 +71,7 @@ func (h *GmHandler) withdraw() http.HandlerFunc {
 		}
 
 		isCorrect, err := luhnalgorithm.LuhnCheck(req.OrderID)
-		if err != nil && errors.Is(err, model.NotANumberError) {
+		if err != nil && errors.Is(err, model.ErrNotANumber) {
 			logger.Log.Error("withdraw LuhnCheck error", zap.String("error", err.Error()))
 			fmt.Println("withdraw LuhnCheck error. order id is not a number")
 			http.Error(w, "order id is not a number", http.StatusUnprocessableEntity)
@@ -103,11 +103,11 @@ func (h *GmHandler) withdraw() http.HandlerFunc {
 
 		err = h.gmService.Withdraw(ctx, req)
 		if err != nil {
-			if errors.Is(err, model.OrderAlreadyUploaded) {
+			if errors.Is(err, model.ErrOrderAlreadyUploaded) {
 				logger.Log.Error("Withdraw error", zap.String("error", err.Error()))
 				http.Error(w, "order id has already been uploaded", http.StatusConflict)
 				return
-			} else if errors.Is(err, model.NotEnoughMoneyError) {
+			} else if errors.Is(err, model.ErrNotEnoughMoney) {
 				logger.Log.Error("Withdraw error", zap.String("error", err.Error()))
 				http.Error(w, "not enough money", http.StatusPaymentRequired)
 				return

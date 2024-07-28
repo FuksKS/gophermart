@@ -30,12 +30,12 @@ func (s service) GetAuthInfo(ctx context.Context, login, pass string, passKey []
 		return 0, fmt.Errorf("GetAuthInfo-GetAuthInfo-err: %w", err)
 	}
 
-	passFromDb, err := crypto.PassDecrypt(passKey, encryptPassFromDB)
+	passFromDB, err := crypto.PassDecrypt(passKey, encryptPassFromDB)
 	if err != nil {
 		return 0, fmt.Errorf("GetAuthInfo-PassDecrypt-err: %w", err)
 	}
 
-	if passFromDb != pass {
+	if passFromDB != pass {
 		return 0, model.ErrWrongPas
 	}
 
