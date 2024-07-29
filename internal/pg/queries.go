@@ -107,13 +107,13 @@ order by processed_at desc
 `
 	getOrderForAccrualQuery = `
 update user_orders
-set updated_at = now() + interval '5 seconds'
+set updated_at = now() + interval '3 seconds'
 where order_id in (select order_id
                    from user_orders
                    where updated_at < now()
                      and status in ('NEW', 'PROCESSING', 'REGISTERED')
                    order by updated_at
-                   limit 1 for update skip locked)
+                   limit 1)
 returning order_id
 `
 	setOrderStatusQuery = `
