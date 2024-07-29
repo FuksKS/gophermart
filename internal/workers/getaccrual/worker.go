@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,6 +42,8 @@ func (w *accrualWorker) Process(ctx context.Context) error {
 		logger.Log.Error("getAccrualWorker-accrualService-GetAccrual-err", zap.Error(err), zap.String("order_id", orderID))
 		return err
 	}
+
+	logger.Log.Info("getAccrualWorker-accrualService-GetAccrual", zap.String("order_id", orderID), zap.String("status code", strconv.Itoa(code)), zap.String("status", accrual.Status))
 
 	switch code {
 	case http.StatusNoContent:
