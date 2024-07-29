@@ -104,15 +104,18 @@ func WithCheckAuth(key string) func(http.Handler) http.Handler {
 			} else {
 				logger.Log.Info("WithAuth middleware. tokenWithUser == nil")
 				http.Error(w, "tokenWithUser == nil", http.StatusUnauthorized)
+				return
 			}
 
 			if err != nil {
 				logger.Log.Info("WithAuth middleware. err from r.Cookie() != nil", zap.String("error: ", err.Error()))
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
 			}
 
 			if err != nil && !errors.Is(err, http.ErrNoCookie) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
 			}
 
 			var userID string
@@ -123,14 +126,17 @@ func WithCheckAuth(key string) func(http.Handler) http.Handler {
 					logger.Log.Info("WithAuth middleware. token.GetUserID", zap.String("userID: ", userID))
 					if err != nil {
 						http.Error(w, "Get userID from token error", http.StatusInternalServerError)
+						return
 					}
 				} else {
 					http.Error(w, "tokenWithUser.Value == ''", http.StatusUnauthorized)
+					return
 				}
 			}
 
 			if userID == "" {
 				http.Error(w, "Absent user_id at authToken", http.StatusUnauthorized)
+				return
 			}
 
 			logger.Log.Info("Известный юзер", zap.String("user_id", userID))
