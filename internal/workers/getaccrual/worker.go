@@ -30,7 +30,7 @@ func (w *accrualWorker) Process(ctx context.Context) error {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			logger.Log.Info("getAccrualWorker-noRowsForProcessing")
-			time.Sleep(1 * time.Second)
+			time.Sleep(200 * time.Millisecond)
 			return nil
 		}
 		logger.Log.Error("getAccrualWorker-storager-GetOrderForAccrual-err", zap.Error(err))

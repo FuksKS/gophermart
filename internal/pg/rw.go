@@ -2,9 +2,12 @@ package pg
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
+	"gophermart/internal/logger"
 	"gophermart/internal/model"
 	"time"
 )
@@ -108,6 +111,9 @@ func (r PgRepo) SetAccrual(ctx context.Context, accrual model.Accrual) error {
 	if err != nil {
 		return fmt.Errorf("SetAccrual-setOrderStatusQuery-err: %w", err)
 	}
+
+	accrualByte, err := json.Marshal(accrual)
+	logger.Log.Info("SetAccrual info", zap.String("returned user", userID), zap.String("accrual", string(accrualByte)))
 
 	if accrual.Accrual != 0 {
 		_, err = tx.Exec(ctx2, increaseBalanceQuery, userID, accrual.Accrual)

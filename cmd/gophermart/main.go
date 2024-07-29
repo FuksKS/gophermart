@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	workerCount    = 2
+	workerCount    = 3
 	workerSchedule = 0
 )
 
