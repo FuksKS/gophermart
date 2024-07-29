@@ -23,7 +23,7 @@ create table if not exists user_orders
     order_id    TEXT                     not null primary key,
     user_id     bigint                   not null,
     status      TEXT                     not null default 'NEW',
-    getaccrual     numeric(10, 2)           not null default 0,
+    accrual     numeric(10, 2)           not null default 0,
     uploaded_at timestamp with time zone not null default now(),
     updated_at  timestamp with time zone not null default now()
 )
@@ -76,7 +76,7 @@ select user_id
 where order_id = $1;
 `
 	getUserOrdersQuery = `
-select order_id, status, getaccrual, uploaded_at
+select order_id, status, accrual, uploaded_at
 from user_orders
 where user_id = $1
 order by uploaded_at desc
@@ -119,7 +119,7 @@ returning order_id
 	setOrderStatusQuery = `
 update user_orders
 set status = $2,
-    gophermart = $3
+    accrual = $3
 where order_id = $1
 returning user_id
 `
