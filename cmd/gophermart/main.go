@@ -3,15 +3,23 @@ package main
 import (
 	"context"
 	"go.uber.org/zap"
+	"gophermart/internal/accrual"
 	"gophermart/internal/config"
 	"gophermart/internal/handlers"
 	"gophermart/internal/logger"
 	"gophermart/internal/pg"
 	"gophermart/internal/service"
+	"gophermart/internal/workers"
+	"gophermart/internal/workers/getaccrual"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+)
+
+const (
+	workerCount    = 2
+	workerSchedule = 0
 )
 
 func main() {
@@ -37,6 +45,14 @@ func main() {
 		logger.Log.Fatal(err.Error(), zap.String("init", "set handler"))
 	}
 	logger.Log.Info("Step 4", zap.String("init", "handler Initialized"))
+
+	accrualClient := accrual.NewClient(cfg.AccrualAddr)
+	accrualWorker := getaccrual.New(serv, accrualClient)
+	for i := 0; i < workerCount; i++ {
+		workers.Start(ctx, accrualWorker, workerSchedule, i)
+	}
+
+	logger.Log.Info("Step 5", zap.String("init", "workers started"))
 
 	logger.Log.Info("Running server", zap.String("address", cfg.HTTPAddr))
 	go func() {
