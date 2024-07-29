@@ -124,8 +124,11 @@ where order_id = $1
 returning user_id
 `
 	increaseBalanceQuery = `
-update user_balance
-set current_balance = current_balance + $2
-where user_id = $1
+insert into user_balance
+(user_id, current_balance)
+VALUES ($1, $2)
+on conflict (user_id) do update
+    set current_balance = user_balance.current_balance + EXCLUDED.current_balance
+where user_balance.user_id = EXCLUDED.user_id;
 `
 )
