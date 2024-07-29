@@ -107,31 +107,29 @@ func WithCheckAuth(key string) func(http.Handler) http.Handler {
 				return
 			}
 
+			if err != nil && !errors.Is(err, http.ErrNoCookie) {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
+			}
+
 			if err != nil {
 				logger.Log.Info("WithAuth middleware. err from r.Cookie() != nil", zap.String("error: ", err.Error()))
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
 			}
 
-			if err != nil && !errors.Is(err, http.ErrNoCookie) {
-				http.Error(w, err.Error(), http.StatusUnauthorized)
-				return
-			}
-
 			var userID string
-			if tokenWithUser != nil {
-				if tokenWithUser.Value != "" {
-					logger.Log.Info("WithAuth middleware. tokenWithUser.Value != ''", zap.String(" tokenWithUser.Value: ", tokenWithUser.Value))
-					userID, err = getUserID(key, tokenWithUser.Value)
-					logger.Log.Info("WithAuth middleware. token.GetUserID", zap.String("userID: ", userID))
-					if err != nil {
-						http.Error(w, "Get userID from token error", http.StatusInternalServerError)
-						return
-					}
-				} else {
-					http.Error(w, "tokenWithUser.Value == ''", http.StatusUnauthorized)
+			if tokenWithUser.Value != "" {
+				logger.Log.Info("WithAuth middleware. tokenWithUser.Value != ''", zap.String(" tokenWithUser.Value: ", tokenWithUser.Value))
+				userID, err = getUserID(key, tokenWithUser.Value)
+				logger.Log.Info("WithAuth middleware. token.GetUserID", zap.String("userID: ", userID))
+				if err != nil {
+					http.Error(w, "Get userID from token error", http.StatusInternalServerError)
 					return
 				}
+			} else {
+				http.Error(w, "tokenWithUser.Value == ''", http.StatusUnauthorized)
+				return
 			}
 
 			if userID == "" {
