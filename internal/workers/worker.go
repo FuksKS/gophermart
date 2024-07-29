@@ -2,7 +2,6 @@ package workers
 
 import (
 	"context"
-	"fmt"
 	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"strconv"
@@ -25,7 +24,7 @@ func run(ctx context.Context, w Worker, period time.Duration, workerNumber int) 
 			return
 		default:
 			if err := w.Process(ctx); err != nil {
-				logger.Log.Error(fmt.Sprintf("Worker-error: %w", err), zap.String("worker number", strconv.Itoa(workerNumber)))
+				logger.Log.Error("Worker-error", zap.Error(err), zap.String("worker number", strconv.Itoa(workerNumber)))
 			}
 		}
 	}
