@@ -109,7 +109,7 @@ order by processed_at desc
 update user_orders
 set updated_at = now() + interval '5 seconds'
 where order_id in (select order_id
-                   from gophermart.user_orders
+                   from user_orders
                    where updated_at < now()
                      and status in ('NEW', 'PROCESSING', 'REGISTERED')
                    order by updated_at
