@@ -32,25 +32,25 @@ func NewConnect(ctx context.Context, dbDSN string, dbTimeout time.Duration) (Pos
 		return PostgresRepository{}, err
 	}
 
+	var exists bool
+	err = db.QueryRow(ctx, existDBQuery).Scan(&exists)
+	if err != nil {
+		return PostgresRepository{}, err
+	}
+
+	if !exists {
+		_, err = db.Exec(ctx, createDBQuery)
+		if err != nil {
+			return PostgresRepository{}, err
+		}
+	}
+
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		tx.Rollback(ctx)
 		return PostgresRepository{}, fmt.Errorf("NewConnect-BeginTx-err: %w", err)
 	}
 	defer tx.Rollback(ctx)
-
-	var exists bool
-	err = tx.QueryRow(ctx, existDBQuery).Scan(&exists)
-	if err != nil {
-		return PostgresRepository{}, err
-	}
-
-	if !exists {
-		_, err = tx.Exec(ctx, createDBQuery)
-		if err != nil {
-			return PostgresRepository{}, err
-		}
-	}
 
 	_, err = tx.Exec(ctx, createUserAuthTableQuery)
 	if err != nil {
