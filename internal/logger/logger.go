@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+
 	"go.uber.org/zap"
 )
 
@@ -12,16 +13,17 @@ const (
 
 var Log *zap.Logger = zap.NewNop()
 
-// Init инициализирует синглтон логера с необходимым уровнем логирования.
-func Init(level string) error {
-	lvl, err := zap.ParseAtomicLevel(level)
-	if err != nil {
-		return fmt.Errorf("logger-Init-ParseAtomicLevel-err: %w", err)
-	}
+// LoggerOption описывает функциональную опцию для конфигурации логгера.
+type LoggerOption func(*zap.Config)
 
+// Init инициализирует синглтон логера с необходимыми опциями
+func Init(options ...LoggerOption) error {
 	cfg := zap.NewProductionConfig()
 
-	cfg.Level = lvl
+	for _, opt := range options {
+		opt(&cfg)
+	}
+
 	zl, err := cfg.Build()
 	if err != nil {
 		return fmt.Errorf("logger-Init-cfg.Build-err: %w", err)
@@ -29,4 +31,14 @@ func Init(level string) error {
 
 	Log = zl
 	return nil
+}
+
+// WithLevel задает уровень логирования.
+func WithLevel(level string) LoggerOption {
+	return func(cfg *zap.Config) {
+		lvl, err := zap.ParseAtomicLevel(level)
+		if err == nil {
+			cfg.Level = lvl
+		}
+	}
 }

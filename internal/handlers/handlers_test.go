@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"gophermart/internal/middleware"
 	"gophermart/internal/model"
 	"io"
@@ -15,6 +12,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -60,7 +61,7 @@ func TestRouter(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockService := NewMockgmService(ctrl)
 
-	handler, err := New(mockService, defaultSignatureKey, []byte(defaultPassKey))
+	handler, err := New(mockService, defaultSignatureKey)
 	require.NoError(t, err)
 
 	ts := httptest.NewServer(handler.InitRouter())
@@ -105,7 +106,7 @@ func TestRouter(t *testing.T) {
 				Password: "pass1",
 			},
 			expectCall: func() {
-				mockService.EXPECT().AddAuthInfo(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(1), nil)
+				mockService.EXPECT().AddAuthInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(1), nil)
 			},
 			want: want{
 				statusCode:  http.StatusOK,
@@ -121,7 +122,7 @@ func TestRouter(t *testing.T) {
 				Password: "pass2",
 			},
 			expectCall: func() {
-				mockService.EXPECT().AddAuthInfo(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrLoginAlreadyExist)
+				mockService.EXPECT().AddAuthInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrLoginAlreadyExist)
 			},
 			want: want{
 				statusCode:  http.StatusConflict,
@@ -138,7 +139,7 @@ func TestRouter(t *testing.T) {
 				Password: "pass1",
 			},
 			expectCall: func() {
-				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(1), nil)
+				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(1), nil)
 			},
 			want: want{
 				statusCode:  http.StatusOK,
@@ -154,7 +155,7 @@ func TestRouter(t *testing.T) {
 				Password: "pass3",
 			},
 			expectCall: func() {
-				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrWrongLogin)
+				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrWrongLogin)
 			},
 			want: want{
 				statusCode:  http.StatusUnauthorized,
@@ -171,7 +172,7 @@ func TestRouter(t *testing.T) {
 				Password: "pass2",
 			},
 			expectCall: func() {
-				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrWrongPas)
+				mockService.EXPECT().GetAuthInfo(gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(int64(0), model.ErrWrongPas)
 			},
 			want: want{
 				statusCode:  http.StatusUnauthorized,

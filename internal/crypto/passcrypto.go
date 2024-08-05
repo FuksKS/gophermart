@@ -9,9 +9,17 @@ import (
 	"io"
 )
 
+type encrypter struct {
+	key []byte
+}
+
+func NewEncrypter(key []byte) *encrypter {
+	return &encrypter{key: key}
+}
+
 // PassEncrypt encrypts plain text string into cipher text string using the given key
-func PassEncrypt(key []byte, plaintext string) (string, error) {
-	block, err := aes.NewCipher(key)
+func (e encrypter) PassEncrypt(plaintext string) (string, error) {
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return "", err
 	}
@@ -31,13 +39,13 @@ func PassEncrypt(key []byte, plaintext string) (string, error) {
 }
 
 // PassDecrypt decrypts cipher text string into plain text string using the given key
-func PassDecrypt(key []byte, encrypted string) (string, error) {
+func (e encrypter) PassDecrypt(encrypted string) (string, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
 	if err != nil {
 		return "", fmt.Errorf("PassDecrypt DecodeString err: %w", err)
 	}
 
-	block, err := aes.NewCipher(key)
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return "", fmt.Errorf("PassDecrypt NewCipher err: %w", err)
 	}

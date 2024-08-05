@@ -1,21 +1,20 @@
 package handlers
 
 import (
-	"github.com/go-chi/chi/v5"
 	"gophermart/internal/middleware"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type GmHandler struct {
 	gmService    gmService
 	signatureKey string
-	passKey      []byte
 }
 
-func New(gmService gmService, signatureKey string, passKey []byte) (*GmHandler, error) {
+func New(gmService gmService, signatureKey string) (*GmHandler, error) {
 	gmHandler := &GmHandler{
 		gmService:    gmService,
 		signatureKey: signatureKey,
-		passKey:      passKey,
 	}
 
 	return gmHandler, nil

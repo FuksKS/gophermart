@@ -3,12 +3,13 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"gophermart/internal/model"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 )
 
 const cookieName = "authToken"

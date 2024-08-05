@@ -8,15 +8,16 @@ import (
 )
 
 type service struct {
-	gmRepo gophermartRepo
+	gmRepo    gophermartRepo
+	encrypter crypto.PasswordEncrypter
 }
 
-func New(gmRepo gophermartRepo) *service {
-	return &service{gmRepo: gmRepo}
+func New(gmRepo gophermartRepo, encrypter crypto.PasswordEncrypter) *service {
+	return &service{gmRepo: gmRepo, encrypter: encrypter}
 }
 
-func (s service) AddAuthInfo(ctx context.Context, login, pass string, passKey []byte) (int64, error) {
-	encodedPass, err := crypto.PassEncrypt(passKey, pass)
+func (s service) AddAuthInfo(ctx context.Context, login, pass string) (int64, error) {
+	encodedPass, err := s.encrypter.PassEncrypt(pass)
 	if err != nil {
 		return 0, fmt.Errorf("AddAuthInfo-PassEncrypt-err: %w", err)
 	}
@@ -24,13 +25,13 @@ func (s service) AddAuthInfo(ctx context.Context, login, pass string, passKey []
 	return s.gmRepo.AddAuthInfo(ctx, login, encodedPass)
 }
 
-func (s service) GetAuthInfo(ctx context.Context, login, pass string, passKey []byte) (int64, error) {
+func (s service) GetAuthInfo(ctx context.Context, login, pass string) (int64, error) {
 	userID, encryptPassFromDB, err := s.gmRepo.GetAuthInfo(ctx, login)
 	if err != nil {
 		return 0, fmt.Errorf("GetAuthInfo-GetAuthInfo-err: %w", err)
 	}
 
-	passFromDB, err := crypto.PassDecrypt(passKey, encryptPassFromDB)
+	passFromDB, err := s.encrypter.PassDecrypt(encryptPassFromDB)
 	if err != nil {
 		return 0, fmt.Errorf("GetAuthInfo-PassDecrypt-err: %w", err)
 	}

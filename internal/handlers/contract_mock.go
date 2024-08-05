@@ -36,18 +36,18 @@ func (m *MockgmService) EXPECT() *MockgmServiceMockRecorder {
 }
 
 // AddAuthInfo mocks base method.
-func (m *MockgmService) AddAuthInfo(ctx context.Context, login, pass string, passKey []byte) (int64, error) {
+func (m *MockgmService) AddAuthInfo(ctx context.Context, login, pass string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAuthInfo", ctx, login, pass, passKey)
+	ret := m.ctrl.Call(m, "AddAuthInfo", ctx, login, pass)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddAuthInfo indicates an expected call of AddAuthInfo.
-func (mr *MockgmServiceMockRecorder) AddAuthInfo(ctx, login, pass, passKey interface{}) *gomock.Call {
+func (mr *MockgmServiceMockRecorder) AddAuthInfo(ctx, login, pass interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAuthInfo", reflect.TypeOf((*MockgmService)(nil).AddAuthInfo), ctx, login, pass, passKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAuthInfo", reflect.TypeOf((*MockgmService)(nil).AddAuthInfo), ctx, login, pass)
 }
 
 // AddOrder mocks base method.
@@ -65,18 +65,18 @@ func (mr *MockgmServiceMockRecorder) AddOrder(ctx, orderID, userID interface{}) 
 }
 
 // GetAuthInfo mocks base method.
-func (m *MockgmService) GetAuthInfo(ctx context.Context, login, pass string, passKey []byte) (int64, error) {
+func (m *MockgmService) GetAuthInfo(ctx context.Context, login, pass string) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAuthInfo", ctx, login, pass, passKey)
+	ret := m.ctrl.Call(m, "GetAuthInfo", ctx, login, pass)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAuthInfo indicates an expected call of GetAuthInfo.
-func (mr *MockgmServiceMockRecorder) GetAuthInfo(ctx, login, pass, passKey interface{}) *gomock.Call {
+func (mr *MockgmServiceMockRecorder) GetAuthInfo(ctx, login, pass interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthInfo", reflect.TypeOf((*MockgmService)(nil).GetAuthInfo), ctx, login, pass, passKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthInfo", reflect.TypeOf((*MockgmService)(nil).GetAuthInfo), ctx, login, pass)
 }
 
 // GetBalance mocks base method.

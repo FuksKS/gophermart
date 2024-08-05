@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"gophermart/internal/accrual"
 	"gophermart/internal/config"
+	"gophermart/internal/crypto"
 	"gophermart/internal/handlers"
 	"gophermart/internal/logger"
 	"gophermart/internal/pg"
@@ -15,6 +15,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/zap"
 )
 
 const (
@@ -26,27 +28,28 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cfg := config.Init()
 
-	if err := logger.Init(logger.LoggerLevelINFO); err != nil {
+	if err := logger.Init(logger.WithLevel(logger.LoggerLevelINFO)); err != nil {
 		logger.Log.Fatal(err.Error(), zap.String("init", "logger Initialize"))
 	}
 	logger.Log.Info("Step 1", zap.String("init", "config Initialized"))
 
-	db, err := pg.NewConnect(ctx, cfg.DBURI)
+	db, err := pg.NewConnect(ctx, cfg.DBConfig.DBURI, cfg.DBConfig.DBTimeout)
 	if err != nil {
 		logger.Log.Fatal(err.Error(), zap.String("init", "db Initialize"))
 	}
-	logger.Log.Info("Step 2", zap.String("init", "db Initialized"), zap.String("cfg.DBURI", cfg.DBURI))
+	logger.Log.Info("Step 2", zap.String("init", "db Initialized"), zap.String("cfg.DBURI", cfg.DBConfig.DBURI))
 
-	serv := service.New(db)
+	encrypter := crypto.NewEncrypter(cfg.ServerConfig.PassKey)
+	serv := service.New(db, encrypter)
 	logger.Log.Info("Step 3", zap.String("init", "service Initialized"))
 
-	handler, err := handlers.New(serv, cfg.SignatureKey, cfg.PassKey)
+	handler, err := handlers.New(serv, cfg.ServerConfig.SignatureKey)
 	if err != nil {
 		logger.Log.Fatal(err.Error(), zap.String("init", "set handler"))
 	}
 	logger.Log.Info("Step 4", zap.String("init", "handler Initialized"))
 
-	accrualClient := accrual.NewClient(cfg.AccrualAddr)
+	accrualClient := accrual.NewClient(cfg.ClientConfig.AccrualAddr, cfg.ClientConfig.ClientTimeout)
 	accrualWorker := getaccrual.New(serv, accrualClient)
 	for i := 0; i < workerCount; i++ {
 		workers.Start(ctx, accrualWorker, workerSchedule, i)
@@ -54,9 +57,9 @@ func main() {
 
 	logger.Log.Info("Step 5", zap.String("init", "workers started"))
 
-	logger.Log.Info("Running server", zap.String("address", cfg.HTTPAddr))
+	logger.Log.Info("Running server", zap.String("address", cfg.ServerConfig.HTTPAddr))
 	go func() {
-		if err := http.ListenAndServe(cfg.HTTPAddr, handler.InitRouter()); err != nil {
+		if err := http.ListenAndServe(cfg.ServerConfig.HTTPAddr, handler.InitRouter()); err != nil {
 			logger.Log.Fatal(err.Error(), zap.String("event", "start server"))
 		}
 	}()
@@ -65,7 +68,7 @@ func main() {
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 	<-done
 
-	logger.Log.Info("Stop server", zap.String("address", cfg.HTTPAddr))
+	logger.Log.Info("Stop server", zap.String("address", cfg.ServerConfig.HTTPAddr))
 
 	cancel()
 

@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"gophermart/internal/luhnalgorithm"
 	"gophermart/internal/model"
 	"io"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 func (h *GmHandler) getBalance() http.HandlerFunc {

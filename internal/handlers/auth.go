@@ -3,12 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"gophermart/internal/model"
 	"io"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 func (h *GmHandler) register() http.HandlerFunc {
@@ -30,7 +31,7 @@ func (h *GmHandler) register() http.HandlerFunc {
 			return
 		}
 
-		userID, err := h.gmService.AddAuthInfo(ctx, req.Login, req.Password, h.passKey)
+		userID, err := h.gmService.AddAuthInfo(ctx, req.Login, req.Password)
 		if err != nil {
 			if errors.Is(err, model.ErrLoginAlreadyExist) {
 				logger.Log.Error("register AddAuthInfo error", zap.String("login", req.Login), zap.String("error", "login already exist"))
@@ -75,7 +76,7 @@ func (h *GmHandler) login() http.HandlerFunc {
 			return
 		}
 
-		userID, err := h.gmService.GetAuthInfo(ctx, req.Login, req.Password, h.passKey)
+		userID, err := h.gmService.GetAuthInfo(ctx, req.Login, req.Password)
 		if err != nil {
 			if errors.Is(err, model.ErrWrongLogin) {
 				logger.Log.Error("login GetAuthInfo error", zap.String("login", req.Login), zap.String("error", err.Error()))

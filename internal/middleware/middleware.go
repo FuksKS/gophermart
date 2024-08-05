@@ -3,12 +3,13 @@ package middleware
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"gophermart/internal/model"
 	"net/http"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type (

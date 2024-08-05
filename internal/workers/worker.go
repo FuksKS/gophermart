@@ -2,10 +2,11 @@ package workers
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"strconv"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Worker interface {

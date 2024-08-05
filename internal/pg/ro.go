@@ -4,18 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"gophermart/internal/model"
-	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func (r PgRepo) GetAuthInfo(ctx context.Context, login string) (int64, string, error) {
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r PostgresRepository) GetAuthInfo(ctx context.Context, login string) (int64, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.DBTimeout)
 	defer cancel()
 
 	var userID int64
 	var pass string
-	err := r.DB.QueryRow(ctx2, getAuthInfoQuery, login).Scan(&userID, &pass)
+	err := r.DB.QueryRow(ctx, getAuthInfoQuery, login).Scan(&userID, &pass)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, "", model.ErrWrongLogin
@@ -26,11 +26,11 @@ func (r PgRepo) GetAuthInfo(ctx context.Context, login string) (int64, string, e
 	return userID, pass, nil
 }
 
-func (r PgRepo) GetOrders(ctx context.Context, userID int64) ([]model.Order, error) {
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r PostgresRepository) GetOrders(ctx context.Context, userID int64) ([]model.Order, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.DBTimeout)
 	defer cancel()
 
-	rows, err := r.DB.Query(ctx2, getUserOrdersQuery, userID)
+	rows, err := r.DB.Query(ctx, getUserOrdersQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("GetOrders-getUserOrdersQuery-err: %w", err)
 	}
@@ -38,17 +38,17 @@ func (r PgRepo) GetOrders(ctx context.Context, userID int64) ([]model.Order, err
 
 	orders, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Order])
 	if err != nil {
-		return nil, fmt.Errorf("PgRepo-GetOrders-CollectRows-err: %w", err)
+		return nil, fmt.Errorf("GetOrders-CollectRows-err: %w", err)
 	}
 
 	return orders, nil
 }
 
-func (r PgRepo) GetBalance(ctx context.Context, userID int64) (model.Balance, error) {
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r PostgresRepository) GetBalance(ctx context.Context, userID int64) (model.Balance, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.DBTimeout)
 	defer cancel()
 
-	rows, err := r.DB.Query(ctx2, getUserBalanceQuery, userID)
+	rows, err := r.DB.Query(ctx, getUserBalanceQuery, userID)
 	if err != nil {
 		return model.Balance{}, fmt.Errorf("GetBalance-getUserBalanceQuery-err: %w", err)
 	}
@@ -56,17 +56,17 @@ func (r PgRepo) GetBalance(ctx context.Context, userID int64) (model.Balance, er
 
 	balance, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[model.Balance])
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) { // если запись по юзеру не найдена, то вместо ошибки вернем нулевой баланс
-		return model.Balance{}, fmt.Errorf("PgRepo-GetBalance-CollectRows-err: %w", err)
+		return model.Balance{}, fmt.Errorf("GetBalance-CollectRows-err: %w", err)
 	}
 
 	return balance, nil
 }
 
-func (r PgRepo) GetWithdrawals(ctx context.Context, userID int64) ([]model.Withdraw, error) {
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r PostgresRepository) GetWithdrawals(ctx context.Context, userID int64) ([]model.Withdraw, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.DBTimeout)
 	defer cancel()
 
-	rows, err := r.DB.Query(ctx2, getUserWithdrawalsQuery, userID)
+	rows, err := r.DB.Query(ctx, getUserWithdrawalsQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("GetWithdrawals-getUserWithdrawalsQuery-err: %w", err)
 	}
@@ -74,18 +74,18 @@ func (r PgRepo) GetWithdrawals(ctx context.Context, userID int64) ([]model.Withd
 
 	withdrawals, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[model.Withdraw])
 	if err != nil {
-		return nil, fmt.Errorf("PgRepo-GetWithdrawals-CollectRows-err: %w", err)
+		return nil, fmt.Errorf("GetWithdrawals-CollectRows-err: %w", err)
 	}
 
 	return withdrawals, nil
 }
 
-func (r PgRepo) GetOrderForAccrual(ctx context.Context) (string, error) {
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (r PostgresRepository) GetOrderForAccrual(ctx context.Context) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.DBTimeout)
 	defer cancel()
 
 	var orderID string
-	err := r.DB.QueryRow(ctx2, getOrderForAccrualQuery).Scan(&orderID)
+	err := r.DB.QueryRow(ctx, getOrderForAccrualQuery).Scan(&orderID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", err

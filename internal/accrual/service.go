@@ -13,14 +13,14 @@ const getAccrualPath = "/api/orders/%s"
 
 type client struct {
 	BaseURL    string
-	HTTPClient *http.Client
+	HTTPClient HTTPClient
 }
 
-func NewClient(baseURL string) *client {
+func NewClient(baseURL string, clientTimeout time.Duration) *client {
 	return &client{
 		BaseURL: baseURL,
 		HTTPClient: &http.Client{
-			Timeout: 3 * time.Second,
+			Timeout: clientTimeout,
 		},
 	}
 }

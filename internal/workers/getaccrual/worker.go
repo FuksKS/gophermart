@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 type accrualWorker struct {

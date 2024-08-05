@@ -3,10 +3,11 @@ package middleware
 import (
 	"compress/gzip"
 	"fmt"
-	"go.uber.org/zap"
 	"gophermart/internal/logger"
 	"io"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 // compressWriter реализует интерфейс http.ResponseWriter и позволяет прозрачно для сервера

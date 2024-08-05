@@ -3,25 +3,53 @@ package config
 import (
 	"flag"
 	"fmt"
-	"github.com/caarlos0/env/v6"
 	"log"
+	"time"
+
+	"github.com/caarlos0/env/v6"
 )
 
 const (
-	defaultAddr         = "localhost:8080"
-	defaultDBURI        = "postgres://fuks:pass@localhost:5432/gophermart"
-	defaultAccrualAddr  = "http://localhost:8000"
-	defaultSignatureKey = "super_secret"
-	lenPassKey          = 32
-	defaultPassKey      = "myverystrongpasswordo32bitlength"
+	defaultAddr          = "localhost:8080"
+	defaultDBURI         = "postgres://fuks:pass@localhost:5432/gophermart"
+	defaultAccrualAddr   = "http://localhost:8000"
+	defaultSignatureKey  = "super_secret"
+	lenPassKey           = 32
+	defaultPassKey       = "myverystrongpasswordo32bitlength"
+	defaultDBTimeout     = 3 * time.Second
+	defaultClientTimeout = 3 * time.Second
 )
 
+type Config2 struct {
+	HTTPAddr      string        `env:"RUN_ADDRESS"`
+	DBURI         string        `env:"DATABASE_URI"`
+	AccrualAddr   string        `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	SignatureKey  string        `env:"SIGNATURE_KEY"` // ключ для подписи кук при авторизации
+	PassKey       []byte        `env:"PASS_KEY"`      // симметричный ключ для паролей юзеров
+	DBTimeout     time.Duration `env:"DB_TIMEOUT"`    // таймаут на запросы в базу
+	ClientTimeout time.Duration `env:"CLIEN_TIMEOUT"` // клиентский таймаут
+}
+
 type Config struct {
+	ServerConfig ServerConfig
+	DBConfig     DBConfig
+	ClientConfig ClientConfig
+}
+
+type ServerConfig struct {
 	HTTPAddr     string `env:"RUN_ADDRESS"`
-	DBURI        string `env:"DATABASE_URI"`
-	AccrualAddr  string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	SignatureKey string `env:"SIGNATURE_KEY"` // ключ для подписи кук при авторизации
 	PassKey      []byte `env:"PASS_KEY"`      // симметричный ключ для паролей юзеров
+}
+
+type DBConfig struct {
+	DBURI     string        `env:"DATABASE_URI"`
+	DBTimeout time.Duration `env:"DB_TIMEOUT"` // таймаут на запросы в базу
+}
+
+type ClientConfig struct {
+	AccrualAddr   string        `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	ClientTimeout time.Duration `env:"CLIEN_TIMEOUT"` // клиентский таймаут
 }
 
 func Init() *Config {
@@ -31,25 +59,33 @@ func Init() *Config {
 	}
 
 	flagAddr, flagDBURI, flagAccrualAddr, flagSignKey, flagPassKey := flagConfig()
-	if cfg.HTTPAddr == "" {
-		cfg.HTTPAddr = flagAddr
+	if cfg.ServerConfig.HTTPAddr == "" {
+		cfg.ServerConfig.HTTPAddr = flagAddr
 	}
-	if cfg.DBURI == "" {
-		cfg.DBURI = flagDBURI
+	if cfg.DBConfig.DBURI == "" {
+		cfg.DBConfig.DBURI = flagDBURI
 	}
-	if cfg.AccrualAddr == "" {
-		cfg.AccrualAddr = flagAccrualAddr
+	if cfg.ClientConfig.AccrualAddr == "" {
+		cfg.ClientConfig.AccrualAddr = flagAccrualAddr
 	}
-	if cfg.SignatureKey == "" {
-		cfg.SignatureKey = flagSignKey
+	if cfg.ServerConfig.SignatureKey == "" {
+		cfg.ServerConfig.SignatureKey = flagSignKey
 	}
 
-	if cfg.PassKey == nil {
-		cfg.PassKey = []byte(flagPassKey)
+	if cfg.ServerConfig.PassKey == nil {
+		cfg.ServerConfig.PassKey = []byte(flagPassKey)
 	} else {
-		if len(cfg.PassKey) != lenPassKey {
-			cfg.PassKey = []byte(flagPassKey)
+		if len(cfg.ServerConfig.PassKey) != lenPassKey {
+			cfg.ServerConfig.PassKey = []byte(flagPassKey)
 		}
+	}
+
+	if cfg.DBConfig.DBTimeout == time.Duration(0) {
+		cfg.DBConfig.DBTimeout = defaultDBTimeout
+	}
+
+	if cfg.ClientConfig.ClientTimeout == time.Duration(0) {
+		cfg.ClientConfig.ClientTimeout = defaultClientTimeout
 	}
 
 	return &cfg
